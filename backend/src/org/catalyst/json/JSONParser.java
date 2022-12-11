@@ -25,6 +25,14 @@ public final class JSONParser {
         
         COMMA(","),
         
+        TRUE,
+        
+        FALSE,
+        
+        NULL,
+        
+        NUMBER,
+        
         STRING,
         
         EOF_$("end of file");
@@ -132,7 +140,20 @@ public final class JSONParser {
 
         return text;
     }
+    
+    private boolean didMatch(final Token token) {
+        
+        if (lookAheadToken == token) {
 
+            lookAheadToken = next();
+            
+            return true;
+            
+        }
+        
+        return false;
+    }
+    
     private record Result(String text, boolean matched) { }
 
     private static final Result NO = new Result(null, false);
@@ -160,14 +181,22 @@ public final class JSONParser {
           | object
           ;
     
-    list : LEFT_BRACKET entryValue restOfList
+    list : LEFT_BRACKET listValues RIGHT_BRACKET
          ;
     
-    restOfList : COMMA entryValue restOfList
-               | RIGHT_BRACKET
+    listValues : entryValue remainingListValues
+               |
                ;
     
-    entryValue : STRING
+    remainingListValues : COMMA entryValue remainingListValues
+                        |
+                        ;
+    
+    entryValue : TRUE
+               | FALSE
+               | NULL
+               | NUMBER
+               | STRING
                | object
                | list
                ;
@@ -204,42 +233,78 @@ public final class JSONParser {
     
     private List<Object> list() {
         
+        match(LEFT_BRACKET);
+
         final List<Object> objects = new ArrayList<>();
         
-        match(LEFT_BRACKET);
+        listValues(objects);
         
-        final Object object = entryValue();
-        
-        objects.add(object);
-        
-        restOfList(objects);
+        match(RIGHT_BRACKET);
         
         return objects;
     }
     
-    private void restOfList(final List<Object> objects) {
+    private void listValues(final List<Object> objects) {
         
-        if (tryMatch(COMMA).matched) {
+        if ((lookAheadToken == TRUE)
+                || (lookAheadToken == FALSE)
+                || (lookAheadToken == NULL)
+                || (lookAheadToken == NUMBER)
+                || (lookAheadToken == STRING)
+                || (lookAheadToken == LEFT_BRACKET)
+                || (lookAheadToken == LEFT_CURLY_BRACKET)) {
             
             final Object object = entryValue();
-
+            
             objects.add(object);
             
-            restOfList(objects);
-            
-            return;
+            remainingListValues(objects);
             
         }
         
-        match(RIGHT_BRACKET);
-        
     }
 
+    private void remainingListValues(final List<Object> objects) {
+
+        if (didMatch(COMMA)) {
+            
+            final Object object = entryValue();
+            
+            objects.add(object);
+            
+            remainingListValues(objects);
+            
+        }
+        
+    }
+    
     private Object entryValue() {
+        
+        if (didMatch(TRUE)) {
+            
+            return true;
+            
+        } else if (didMatch(FALSE)) {
 
-        final Result result = tryMatch(STRING);
+            return false;
 
-        if (result.matched) {
+        } else if (didMatch(NULL)) {
+            
+            return null;
+            
+        }
+        
+        Result result = tryMatch(NUMBER);
+        
+        if (result.matched()) {
+            
+            return Double.parseDouble(result.text());
+            
+        }
+        
+        result = tryMatch(STRING);
+        
+        if (result.matched()) {
             
             final String text = result.text();
             
@@ -284,7 +349,7 @@ public final class JSONParser {
 
     private void moreEntries(final Map<Object, Object> objectMap) {
 
-        if (tryMatch(COMMA).matched) {
+        if (didMatch(COMMA)) {
 
             entry(objectMap);
 

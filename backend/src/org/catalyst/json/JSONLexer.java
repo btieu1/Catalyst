@@ -35,9 +35,11 @@ final class JSONLexer {
    * Translates characters to character classes
    */
   private static final String ZZ_CMAP_PACKED = 
-    "\11\0\1\0\26\0\1\0\1\0\1\7\11\0\1\6\1\0\1\10"+
-    "\13\0\1\5\40\0\1\3\1\0\1\4\35\0\1\1\1\0\1\2"+
-    "\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uff92\0";
+    "\11\0\1\24\1\25\2\24\1\26\22\0\1\24\1\0\1\23\11\0"+
+    "\1\6\1\0\1\21\1\0\12\20\1\5\12\0\1\22\25\0\1\3"+
+    "\1\0\1\4\3\0\1\14\3\0\1\12\1\13\5\0\1\15\1\0"+
+    "\1\17\3\0\1\10\1\16\1\7\1\11\5\0\1\1\1\0\1\2"+
+    "\7\0\1\24\u1fa2\0\2\24\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\udfe6\0";
 
   /** 
    * Translates characters to character classes
@@ -51,10 +53,11 @@ final class JSONLexer {
 
   private static final String ZZ_ACTION_PACKED_0 =
     "\1\0\1\1\1\2\1\3\1\4\1\5\1\6\1\7"+
-    "\1\1\1\10\1\0\1\11";
+    "\3\1\1\10\1\1\2\11\6\0\1\12\3\0\2\10"+
+    "\1\13\1\0\1\14\1\15";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[12];
+    int [] result = new int[31];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -79,11 +82,13 @@ final class JSONLexer {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\11\0\11\0\11\0\11\0\11\0\11\0\11"+
-    "\0\22\0\11\0\22\0\11";
+    "\0\0\0\27\0\27\0\27\0\27\0\27\0\27\0\27"+
+    "\0\56\0\105\0\134\0\163\0\212\0\27\0\241\0\270"+
+    "\0\317\0\346\0\375\0\u0114\0\212\0\27\0\u012b\0\u0142"+
+    "\0\u0159\0\375\0\u0170\0\27\0\u0187\0\27\0\27";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[12];
+    int [] result = new int[31];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -107,10 +112,16 @@ final class JSONLexer {
 
   private static final String ZZ_TRANS_PACKED_0 =
     "\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11"+
-    "\1\12\11\0\7\13\1\14\1\13";
+    "\3\2\1\12\3\2\1\13\1\14\2\2\1\15\2\16"+
+    "\1\17\37\0\1\20\32\0\1\21\23\0\1\22\27\0"+
+    "\1\23\5\0\1\14\1\24\1\23\4\0\23\25\1\26"+
+    "\3\25\25\0\1\16\12\0\1\27\32\0\1\30\26\0"+
+    "\1\31\31\0\1\32\26\0\1\33\20\0\1\34\32\0"+
+    "\1\35\25\0\1\36\23\0\1\23\5\0\1\33\1\0"+
+    "\1\23\16\0\1\37\14\0";
 
   private static int [] zzUnpackTrans() {
-    int [] result = new int[27];
+    int [] result = new int[414];
     int offset = 0;
     offset = zzUnpackTrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -148,10 +159,11 @@ final class JSONLexer {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\1\0\7\11\1\1\1\11\1\0\1\11";
+    "\1\0\7\11\5\1\1\11\1\1\6\0\1\11\3\0"+
+    "\2\1\1\11\1\0\2\11";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[12];
+    int [] result = new int[31];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -260,7 +272,7 @@ final class JSONLexer {
     char [] map = new char[0x110000];
     int i = 0;  /* index in packed string  */
     int j = 0;  /* index in unpacked array */
-    while (i < 74) {
+    while (i < 122) {
       int  count = packed.charAt(i++);
       char value = packed.charAt(i++);
       do map[j++] = value; while (--count > 0);
@@ -614,50 +626,70 @@ final class JSONLexer {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1: 
-            { /* WHITESPACE IGNORED */
+            { throw new RuntimeException("unexpected token: " + yytext() + String.format(" [line %d, column %d]", line(), column()));
             } 
             // fall through
-          case 10: break;
+          case 14: break;
           case 2: 
             { return LEFT_CURLY_BRACKET;
             } 
             // fall through
-          case 11: break;
+          case 15: break;
           case 3: 
             { return RIGHT_CURLY_BRACKET;
             } 
             // fall through
-          case 12: break;
+          case 16: break;
           case 4: 
             { return LEFT_BRACKET;
             } 
             // fall through
-          case 13: break;
+          case 17: break;
           case 5: 
             { return RIGHT_BRACKET;
             } 
             // fall through
-          case 14: break;
+          case 18: break;
           case 6: 
             { return COLON;
             } 
             // fall through
-          case 15: break;
+          case 19: break;
           case 7: 
             { return COMMA;
             } 
             // fall through
-          case 16: break;
+          case 20: break;
           case 8: 
-            { throw new RuntimeException("unexpected token: " + yytext() + String.format(" [line %d, column %d]", line(), column()));
+            { return NUMBER;
             } 
             // fall through
-          case 17: break;
+          case 21: break;
           case 9: 
+            { /* WHITESPACE IGNORED */
+            } 
+            // fall through
+          case 22: break;
+          case 10: 
             { return STRING;
             } 
             // fall through
-          case 18: break;
+          case 23: break;
+          case 11: 
+            { return TRUE;
+            } 
+            // fall through
+          case 24: break;
+          case 12: 
+            { return NULL;
+            } 
+            // fall through
+          case 25: break;
+          case 13: 
+            { return FALSE;
+            } 
+            // fall through
+          case 26: break;
           default:
             zzScanError(ZZ_NO_MATCH);
         }
