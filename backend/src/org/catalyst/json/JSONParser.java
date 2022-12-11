@@ -2,7 +2,9 @@ package org.catalyst.json;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.catalyst.json.JSONParser.Token.*;
@@ -73,11 +75,11 @@ public final class JSONParser {
 
     private Token lookAheadToken;
 
-    public Map<Object, Object> parse() {
+    public Object parse() {
 
         lookAheadToken = next();
 
-        final Map<Object, Object> json = start();
+        final Object json = start();
 
         if (lookAheadToken != EOF_$) {
 
@@ -186,40 +188,44 @@ public final class JSONParser {
     
     */
     
-    private Map<Object, Object> start() {
-        
-        final Map<Object, Object> json = new HashMap<>();
+    private Object start() {
         
         if (lookAheadToken == LEFT_BRACKET) {
 
-            list();
+            return list();
             
         } else {
             
-            object();
+            return object();
             
         }
         
-        return json;
     }
     
-    private void list() {
+    private List<Object> list() {
+        
+        final List<Object> objects = new ArrayList<>();
         
         match(LEFT_BRACKET);
         
-        entryValue();
+        final Object object = entryValue();
         
-        restOfList();
+        objects.add(object);
         
+        restOfList(objects);
+        
+        return objects;
     }
     
-    private void restOfList() {
+    private void restOfList(final List<Object> objects) {
         
         if (tryMatch(COMMA).matched) {
             
-            entryValue();
+            final Object object = entryValue();
+
+            objects.add(object);
             
-            restOfList();
+            restOfList(objects);
             
             return;
             
@@ -229,76 +235,77 @@ public final class JSONParser {
         
     }
 
-    private void entryValue() {
+    private Object entryValue() {
 
         final Result result = tryMatch(STRING);
 
         if (result.matched) {
-
-            //
-
-            return;
+            
+            final String text = result.text();
+            
+            return text.substring(1, (text.length() - 1));
 
         }
 
         if (lookAheadToken == LEFT_CURLY_BRACKET) {
 
-            object();
-
-            return;
+            return object();
 
         }
-
-        match(LEFT_BRACKET);
-
-        list();
-
-        match(RIGHT_BRACKET);
-
+        
+        return list();
+        
     }
 
-    private void object() {
+    private Map<Object, Object> object() {
 
         match(LEFT_CURLY_BRACKET);
-
-        entries();
+        
+        final Map<Object, Object> objectMap = new HashMap<>();
+        
+        entries(objectMap);
 
         match(RIGHT_CURLY_BRACKET);
-
+        
+        return objectMap;
     }
 
-    private void entries() {
+    private void entries(final Map<Object, Object> objectMap) {
 
         if (lookAheadToken == STRING) {
 
-            entry();
+            entry(objectMap);
 
-            moreEntries();
+            moreEntries(objectMap);
 
         }
 
     }
 
-    private void moreEntries() {
+    private void moreEntries(final Map<Object, Object> objectMap) {
 
         if (tryMatch(COMMA).matched) {
 
-            entry();
+            entry(objectMap);
 
-            moreEntries();
+            moreEntries(objectMap);
 
         }
 
     }
 
-    private void entry() {
+    private void entry(final Map<Object, Object> objectMap) {
 
-        match(STRING);
-
+        final String entry = getMatch(STRING);
+        
+        final String entryString = entry.substring(1, (entry.length() - 1));
+        
         match(COLON);
 
-        entryValue();
-
+        final Object value = entryValue();
+        
+        objectMap.put(entryString, value);
+        
     }
     
 }
