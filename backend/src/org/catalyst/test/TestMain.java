@@ -3,32 +3,28 @@ package org.catalyst.test;
 import org.catalyst.extract.Extractor;
 import org.catalyst.json.JSONParser;
 
-import java.io.StringReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.Map;
 
 public final class TestMain {
 
-    public static void main(final String[] args) {
+    public static void main(final String[] args)
+            throws FileNotFoundException {
         
-        final String json = """
-                {
-                                
-                  "title": "Software Developer",
-                  "experience": "2-3",
-                  "related jobs": [
-                    
-                    "Full stack Developer",
-                    "Data analyst"
-                    
-                  ]
-                                
-                }
-                """;
+        if (args.length != 1) {
+
+            System.err.println("usage: jsonPath");
+            
+            System.exit(1);
+            
+        }
         
-        final JSONParser jsonParser = new JSONParser(new StringReader(json));
+        final JSONParser jsonParser = new JSONParser(new FileReader(args[0]));
+
+        final Map<Object, Object> json = jsonParser.parse();
         
-        jsonParser.parse();
-        
-        Extractor.extract(jsonParser.getJSON());
+        Extractor.extract(json);
         
     }
     

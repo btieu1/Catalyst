@@ -2,6 +2,7 @@ package org.catalyst.json;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.catalyst.json.JSONParser.Token.*;
@@ -72,11 +73,11 @@ public final class JSONParser {
 
     private Token lookAheadToken;
 
-    public void parse() {
+    public Map<Object, Object> parse() {
 
         lookAheadToken = next();
 
-        start();
+        final Map<Object, Object> json = start();
 
         if (lookAheadToken != EOF_$) {
 
@@ -84,6 +85,7 @@ public final class JSONParser {
 
         }
         
+        return json;
     }
 
     private RuntimeException syntaxException(final Token token) {
@@ -152,8 +154,21 @@ public final class JSONParser {
     
     Grammar:
     
-    start : object
+    start : list
+          | object
           ;
+    
+    list : LEFT_BRACKET entryValue restOfList
+         ;
+    
+    restOfList : COMMA entryValue restOfList
+               | RIGHT_BRACKET
+               ;
+    
+    entryValue : STRING
+               | object
+               | list
+               ;
     
     object : LEFT_CURLY_BRACKET entries RIGHT_CURLY_BRACKET
            ;
@@ -169,110 +184,32 @@ public final class JSONParser {
     entry : STRING COLON entryValue
           ;
     
-    entryValue : STRING
-               | object
-               | LEFT_BRACKET list RIGHT_BRACKET
-               ;
-    
-    list : entryValue restOfList
-         |
-         ;
-    
-    restOfList : COMMA entryValue restOfList
-               |
-               ;
-    
     */
     
-    private void start() {
+    private Map<Object, Object> start() {
         
-        object();
+        final Map<Object, Object> json = new HashMap<>();
         
-    }
-    
-    private void object() {
-        
-        match(LEFT_CURLY_BRACKET);
-        
-        entries();
-        
-        match(RIGHT_CURLY_BRACKET);
-        
-    }
-    
-    private void entries() {
-        
-        if (lookAheadToken == STRING) {
+        if (lookAheadToken == LEFT_BRACKET) {
+
+            list();
             
-            entry();
-            
-            moreEntries();
-            
-        }
-        
-    }
-    
-    private void moreEntries() {
-        
-        if (tryMatch(COMMA).matched) {
-            
-            entry();
-            
-            moreEntries();
-            
-        }
-        
-    }
-    
-    private void entry() {
-        
-        match(STRING);
-        
-        match(COLON);
-        
-        entryValue();
-        
-    }
-    
-    private void entryValue() {
-        
-        final Result result = tryMatch(STRING);
-        
-        if (result.matched) {
-            
-            //
-            
-            return;
-            
-        }
-        
-        if (lookAheadToken == LEFT_CURLY_BRACKET) {
+        } else {
             
             object();
             
-            return;
-            
         }
         
-        match(LEFT_BRACKET);
-        
-        list();
-        
-        match(RIGHT_BRACKET);
-        
+        return json;
     }
     
     private void list() {
         
-        if ((lookAheadToken == STRING)
-                || (lookAheadToken == LEFT_CURLY_BRACKET)
-                || (lookAheadToken == LEFT_BRACKET)) {
-            
-            entryValue();
-            
-            restOfList();
-            
-        }
+        match(LEFT_BRACKET);
+        
+        entryValue();
+        
+        restOfList();
         
     }
     
@@ -284,15 +221,84 @@ public final class JSONParser {
             
             restOfList();
             
+            return;
+            
         }
         
+        match(RIGHT_BRACKET);
+        
     }
-    
-    public Map<Object, Object> getJSON() {
-        
-        // TODO
-        
-        return null;
+
+    private void entryValue() {
+
+        final Result result = tryMatch(STRING);
+
+        if (result.matched) {
+
+            //
+
+            return;
+
+        }
+
+        if (lookAheadToken == LEFT_CURLY_BRACKET) {
+
+            object();
+
+            return;
+
+        }
+
+        match(LEFT_BRACKET);
+
+        list();
+
+        match(RIGHT_BRACKET);
+
+    }
+
+    private void object() {
+
+        match(LEFT_CURLY_BRACKET);
+
+        entries();
+
+        match(RIGHT_CURLY_BRACKET);
+
+    }
+
+    private void entries() {
+
+        if (lookAheadToken == STRING) {
+
+            entry();
+
+            moreEntries();
+
+        }
+
+    }
+
+    private void moreEntries() {
+
+        if (tryMatch(COMMA).matched) {
+
+            entry();
+
+            moreEntries();
+
+        }
+
+    }
+
+    private void entry() {
+
+        match(STRING);
+
+        match(COLON);
+
+        entryValue();
+
     }
     
 }
